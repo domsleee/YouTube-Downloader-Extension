@@ -1,0 +1,39 @@
+{
+  "manifest_version": 2,
+  "name": "YouTube Downloader",
+  "description": "Download 60fps MP4 videos and 128kbps MP3 audio from YouTube",
+  "version": "0.01",
+  "icons":{
+    "128":"icon.png"
+  },
+  "content_scripts":
+  [
+    {
+      "matches":[
+        "http://www.youtube.com/*",
+        "https://www.youtube.com/*"
+      ],
+      "js":["lib/jquery-1.12.3.min.js", "main.js"],
+      "css":["css/style.css"],
+      "run_at":"document_start"
+    }
+  ],
+  "options_page":"options/options.html",
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "browser_action": {
+    "default_popup": "popup/popup.html"
+  },
+  "permissions":[
+    "downloads",
+    "http://*.googlevideo.com/*",
+    "https://*.googlevideo.com/*",
+    "http://*.c.docs.google.com/*",
+    "https://*.c.docs.google.com/*",
+    "https://s.ytimg.com/*"
+  ],
+  "web_accessible_resources":[
+    "imgs/downIconSmall.png"
+  ]
+}
