@@ -1,26 +1,27 @@
-//Variables
-var global_settings = localStorage.getObject('global_settings') || {};
-var default_setings = {         // Default settings
+// Variables
+var defaultSettings = {         // Default settings
     quality:7200000,            // Quality selected (720p60)
     ignoreMuted:true,           // Ignore muted
     ignoreTypes:["webm"],       // Ignore webm types (muxing doesn't work atm)
-    ignoreVals:[18, 22],        // Ignore values
+    ignoreVals:[],              // Ignore values
     label:true,                 // Have quality label on download
-    signature_decrypt:false     // Obtained signature pattern
-};
-var global_properties = {
-    audio_size:false,
 };
 
-// Ensures that all global_settings are set... if not, refer to default_settings
-SetupGlobalSettings();
+// Volatile properties
+var globalProperties = {
+    audioSize:false,            // Size of audio
+    signatureCode:false         // Obtained signature pattern
+};
 
 // Objects
+var ytplayer  = {};
+var Ajax      = new AjaxClass();
+var settings  = new Settings(defaultSettings);
 var signature = new Signature();
-var display = new Display();
+var display   = new Display();
 var qualities = new Qualities();
-var download = new Download();
-var unsafe = new Unsafe();
+var download  = new Download();
+var unsafe    = new Unsafe();
 
 // Run the script ONLY if it's on the top
 if (window.top === window) {
@@ -34,41 +35,26 @@ function Program() {
     var url = window.location.href;
     if (url.indexOf("watch") === -1) return;
 
-    unsafe.getVariable("ytplayer", function(ytplayer) {
+    unsafe.getVariable("ytplayer", function(ytp) {
         // If the old thing is still there, wait a while
-        ytplayer = ytplayer || {};
-        if ($("#downloadBtn").length > 0 ) {
+        ytplayer = ytp || {};
+        if ($("#downloadBtn").length > 0 || !ytplayer.config) {
             setTimeout(Program, 2000);
-            return;
-        }
-
-        // If the ytplayer variable hasn't loaded, wait a while
-        window.ytplayer = ytplayer;
-        if (!ytplayer || !ytplayer.config) {
-            var time = window.time || 1;
-            console.log("set timeout for the "+time+" time");
-            window.time = time + 1
-            setTimeout(Program, 500);
             return;
         }
 
         // Verify that the potential is LOADED, by comparing the
         // number of SIGNATURES to the number of URLs
-        var potential = ytplayer.config.args.adaptive_fmts + ytplayer.config.args.url_encoded_fmt_stream_map || "";
-        var urlLen = potential.split("url=").length;
-        var sigLen = decodeURIComponent(potential).split(/(?:(?:&|,|\?|^)s|signature|sig)=/).length;
-        if (sigLen < urlLen && sigLen > 1) {
-            console.log("Signatures:", sigLen, ", URLs:", urlLen);
+        var potential = qualities.getPotential();
+        if (!qualities.checkPotential(potential)) {
             setTimeout(Program, 2000);
             return;
         }
 
         // Get the signature (required for decrypting)
         signature.fetchSignatureScript(function() {
-            // Reset global properties
-            global_properties = {
-                audio_size:false,
-            };
+            // Reset the audio size
+            globalProperties.audioSize = false;
             qualities.initialise();
             qualities.sortItems();
 
@@ -121,9 +107,8 @@ function AddEvents() {
         $("#options").toggle();
 
         // Update the relevant settings
-        global_settings.quality = Number($(this).attr("value"));
-        global_settings.type    = $(this).attr("type");
-        UpdateGlobalSettings();
+        settings.set("quality", Number($(this).attr("value")));
+        settings.set("type",    $(this).attr("type"));
 
         // Update the info
         display.updateInfo($(this));
@@ -147,20 +132,4 @@ function AddEvents() {
         // Hide the options
         $("#options").hide();
     });
-}
-
-// Global settings handling
-function SetupGlobalSettings() {
-    for (var key in default_setings) {
-        if (default_setings.hasOwnProperty(key)) {
-            if (global_settings[key] === undefined) {
-                global_settings[key] = default_setings[key];
-            }
-        }
-    }
-    UpdateGlobalSettings();
-}
-
-function UpdateGlobalSettings(){
-    localStorage.setObject('global_settings', global_settings);
-}
+};

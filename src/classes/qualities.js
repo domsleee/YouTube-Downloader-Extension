@@ -23,7 +23,7 @@ function Qualities() {
 			type:"mp4"
 		},
 		36: {
-			resolution:180,
+			resolution:240,
 			type:"3gpp"
 		},
 		43: {
@@ -33,7 +33,7 @@ function Qualities() {
 		133: {
 			resolution:240,
 			type:"mp4",
-			muted:true
+			muted:true,
 		},
 		134: {
 			resolution:360,
@@ -105,6 +105,18 @@ function Qualities() {
 			audio:true,
 			type:"webm",
 		},
+		264: {
+			resolution:1440,
+			type:"mp4"
+		},
+		266: {
+			resolution:2160,
+			type:"mp4"
+		},
+		271: {
+			resolution:1440,
+			type:"webm"
+		},
 		278: {
 			resolution:140,
 			type:"webm",
@@ -133,8 +145,12 @@ function Qualities() {
 			fps:60,
 			type:"webm",
 			muted:true
-		}
-	}
+		},
+		313: {
+			resolution:2160,
+			type:"webm"
+		},
+	};
 }
 
 Qualities.prototype = {
@@ -143,20 +159,21 @@ Qualities.prototype = {
 	},
 	initialise: function() {
 		this.reset();
-		var ytplayer  = window.ytplayer;
-		var potential = ytplayer.config.args.adaptive_fmts + ytplayer.config.args.url_encoded_fmt_stream_map;
+		var potential = this.getPotential();
+		var split     = potential.split(",");
 
-		var i = 1;
-		var url = decodeURIComponent(potential.getSetting("url", i));
-		while (url !== "false") {
-			url = url.split(",")[0];
-			var oldURL = url;
-			var s = url.getSetting("s") || potential.getSetting("s", i);
-			url = signature.decryptSignature(url, s);
+		for (var i = 0; i<split.length; i++) {
+			// Get relevant properties
+			var sect = split[i];
+			var url  = decodeURIComponent(sect.getSetting("url"));
+			var s    = sect.getSetting("s");
 			var type = decodeURIComponent(url.getSetting("mime"));
-			var clen = url.getSetting("clen") || potential.getSetting("clen", i);
+			var clen = url.getSetting("clen") || sect.getSetting("clen");
 			var itag = parseInt(url.getSetting("itag"), 10);
 			var size = false;
+
+			// Decode the url
+			url = signature.decryptSignature(url, s);
 
 			// Get data from the ITAG identifier
 			var tag = this.itags[itag] || {};
@@ -168,8 +185,8 @@ Qualities.prototype = {
 			var label = this.getLabel(tag);
 
 			// If we have content-length, we can find size IMMEDIATELY
-			if (clen !== "false") {
-				size = parseInt(clen);
+			if (clen) {
+				size = parseInt(clen, 10);
 			}
 
 			// Get the type from the tag
@@ -197,7 +214,6 @@ Qualities.prototype = {
 				dash:tag.dash || false,
 				muted:tag.muted || false,
 				label:label,
-				text:label,
 				audio:tag.url || false,
 				val:val,
 			};
@@ -213,13 +229,9 @@ Qualities.prototype = {
 				});
 
 				this.sizes.getSize($li, function($li, size) {
-					global_properties.audio_size = size;
+					globalProperties.audioSize = size;
 				});
 			}
-
-			// Move on to the next item
-			i++;
-			url = decodeURIComponent(potential.getSetting("url", i));
 		}
 	},
 	getLabel: function(tag) {
@@ -241,7 +253,7 @@ Qualities.prototype = {
 		var val = tag.resolution || 0;
 
 		// Multiply if it has an fps tag (high frame rate)
-		if (tag.fps >= 30) {
+		if (tag.dash) {
 			val *= 100;
 		}
 
@@ -274,20 +286,55 @@ Qualities.prototype = {
 		var valid = true;
 
 		// If it is muted and we are ignoring muted
-		if (global_settings.ignoreMuted && item.muted) {
+		if (settings.get("ignoreMuted") && item.muted) {
 			valid = false;
 		}
 
 		// If it matches a blacklisted type
-		if (global_settings.ignoreTypes.indexOf(item.type) !== -1) {
+		if (settings.get("ignoreTypes").indexOf(item.type) !== -1) {
 			valid = false;
 		}
 
 		// If it matches a blacklisted value
-		if (global_settings.ignoreVals.indexOf(item.val) !== -1) {
+		if (settings.get("ignoreVals").indexOf(item.val) !== -1) {
 			valid = false;
 		}
 
 		return valid;
+	},
+	// Get potential list
+	getPotential: function() {
+		assert(ytplayer !== undefined, "Ytplayer is undefined!");
+		var potential = ytplayer.config.args.adaptive_fmts + "," + ytplayer.config.args.url_encoded_fmt_stream_map || "";
+		potential = potential.replace(/([0-9])s=/g, ",s=");
+
+		return potential;
+	},
+	checkPotential: function(potential) {
+		var lengths = this.getPotentialLengths(potential);
+		var valid = (lengths.url >= lengths.url && lengths.sig > 1);
+
+		// Trace out why it isn't valid
+		if (!valid) {
+			var split = potential.split(",");
+			for (var i = 0; i<split.length; i++) {
+				var splitLengths = this.getPotentialLengths(split[i]);
+				if (splitLengths.url !== 1 || splitLengths.sig !== 1) {
+					console.log("checkPotential");
+					console.log(split[i]);
+					console.log(splitLengths.url, splitLengths,sig);
+				}
+			}
+		}
+
+		// Return if it is valid
+	    return valid;
+	},
+	// Get url and sig lengths from potential list
+	getPotentialLengths: function(potential) {
+		return {
+			url: potential.split("url=").length - 1,
+			sig: decodeURIComponent(potential).split(/(?:(?:&|,|\?|^)s|signature|sig)=/).length - 1
+		};
 	}
 };

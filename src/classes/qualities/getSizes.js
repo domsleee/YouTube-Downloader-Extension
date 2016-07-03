@@ -3,8 +3,9 @@
 // the size in kb/mb/gb etc on each element
 
 function GetSizes() {
+    // Number of decimal places to represent the
+    // size as
     this.SIZE_DP = 1;
-    // No inherit properties
 }
 
 GetSizes.prototype = {
@@ -19,16 +20,12 @@ GetSizes.prototype = {
             callback($li, size);
         } else {
             // We must make a cross-domain request to determine the size from the return headers...
-            $.ajax({
-                type:"HEAD",
-                async:true,
+            Ajax.request({
+                method:"HEAD",
                 url:url,
                 success:function(xhr, text, jqXHR) {
-                    var clen = jqXHR.getResponseHeader("Content-Length") || 0;
-                    callback($li, clen);
-                },
-                error:function(xhr) {
-                    throw new Error("There as been a problem requesting the size");
+                    var size = Number(Ajax.getResponseHeader(xhr, text, jqXHR, "Content-length"));
+                    callback($li, size);
                 }
             });
         }
@@ -46,7 +43,7 @@ GetSizes.prototype = {
         // Default of 0MB
         var returnSize = "0MB";
 
-        for (sizeFormat in sizes){
+        for (var sizeFormat in sizes){
             if (sizes.hasOwnProperty(sizeFormat)) {
                 var minSize = sizes[sizeFormat];
                 if (size > minSize) {
@@ -59,4 +56,4 @@ GetSizes.prototype = {
         // Return the string of return size
         return returnSize;
     }
-}
+};

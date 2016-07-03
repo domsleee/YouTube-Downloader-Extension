@@ -13,7 +13,7 @@ function Display() {
     this.$downloadIcon = $("<img>", {
         style:"margin-right:4.5px",
         class:'midalign',
-        src:chrome.extension.getURL("imgs/downIconSmall.png")
+        src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downIconMed.png"
     });
     // Down select arrow (for dropdown)
     this.$downArrow = $("<img>", {
@@ -43,10 +43,9 @@ Display.prototype = {
         }
     },
     // Initialises the display
-    initOptions: function(qualities, $downloadBtnInfo) {
+    initOptions: function(qualities) {
         // Fallback for setting to top value
         var $topEl = false;
-        var qualitySet = false;
 
         // Reset
         this.updateInfo(false);
@@ -60,7 +59,7 @@ Display.prototype = {
             var quality = qualities.items[i];
             var display = (quality.hidden) ? "none" : "inherit";
             $li = $("<li>", {
-                html:quality.text,
+                html:quality.label,
                 value:quality.val,
                 url:quality.url,
                 type:quality.type,
@@ -85,8 +84,8 @@ Display.prototype = {
             if (!$topEl) $topEl = $li;
 
             // If it matches the set quality, assign it to the info box
-            var sameQuality = (Number($li.attr("value")) === global_settings.quality);
-            var sameType    = ($li.attr("type") === global_settings.type);
+            var sameQuality = (Number($li.attr("value")) === settings.get("quality"));
+            var sameType    = ($li.attr("type") === settings.get("type"));
             if (sameQuality && sameType) {
                 $topEl = $li;
             }
@@ -130,9 +129,9 @@ Display.prototype = {
 
         // If it is of the DASH format
         if ($li.attr("dash") === "true") {
-            if (global_properties.audio_size) {
+            if (globalProperties.audioSize) {
                 // Let the size be the sum of the size and the audio size
-                size = parseInt(size) + parseInt(global_properties.audio_size);
+                size = parseInt(size) + parseInt(globalProperties.audioSize);
 
                 $li.find("span.size").html(sizes.formatSize(size));
                 $li.find("span.size").css("color", this.SIZE_LOADED);
