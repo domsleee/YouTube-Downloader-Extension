@@ -21,7 +21,7 @@ Signature.prototype = {
                 method:"GET",
                 url:scriptURL,
                 success:function(xhr, text, jqXHR) {
-                    var text = (typeof(xhr) === "string") ? jqXHR.responseText : xhr.responseText;
+                    text = (typeof(xhr) === "string") ? jqXHR.responseText : xhr.responseText;
                     _this.findSignatureCode(text);
                     callback();
                 }
