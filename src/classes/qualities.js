@@ -351,7 +351,6 @@ Qualities.prototype = {
 
 			newItem.type = "mp3";
 			this.items.push(newItem);
-			console.log(newItem);
 		}
 	}
 };

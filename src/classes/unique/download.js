@@ -2,89 +2,89 @@
 // files
 
 function Download() {
-    // Construct
+	// Construct
 }
 
 Download.prototype = {
-    // Download the file
-    getVid: function($span, title) {
-        var type = $span.attr("type");
-        var dash = ($span.attr("dash") === "true") ? true : false;
+	// Download the file
+	getVid: function($span, title) {
+		var type = $span.attr("type");
+		var dash = ($span.attr("dash") === "true") ? true : false;
 
-        var title = title || this.getTitle($span.attr("label"));
-        var name = title;
-        var url = $span.attr("url").setSetting("title", encodeURIComponent(title));
+		var title = title || this.getTitle($span.attr("label"));
+		var name = title;
+		var url = $span.attr("url").setSetting("title", encodeURIComponent(title));
 
-        // MP3 change
-        if (type === "mp3") {
-            name = "MP3 - "+name;
-            type = "m4a";
-        }
+		// MP3 change
+		if (type === "mp3") {
+			name = "MP3 - "+name;
+			type = "m4a";
+		}
 
-        // Save to disk
-        this.saveToDisk(url, name+"."+type);
+		// Save to disk
+		this.saveToDisk(url, name+"."+type);
 
-        // If it requires audio, download it
-        if (dash) {
-            this.handleAudio(name);
-        }
+		// If it requires audio, download it
+		if (dash) {
+			this.handleAudio(name);
+		}
 
-        // Re-enable the button after 0.5 seconds
-        setTimeout(function() {
-            display.updateDownloadButton("Download");
-        }, 500);
-    },
-    getTitle: function(label) {
-        label = (label) ? label : "";
-        var str = $("title").html().split(" - YouTube")[0];
-        if (settings.get("label")) str = str+" "+label.toString();
-        str = str.replace(/!|\+|\.|\:|\?|\||\\|\//g, "");
-        return str;
-    },
-    // Download audio if required
-    handleAudio: function(name) {
-        // Download the audio file
-        this.getVid($("#options").find("li[type=m4a]"), "AUDIO - " + name);
+		// Re-enable the button after 0.5 seconds
+		setTimeout(function() {
+			display.updateDownloadButton("Download");
+		}, 500);
+	},
+	getTitle: function(label) {
+		label = (label) ? label : "";
+		var str = $("title").html().split(" - YouTube")[0];
+		if (settings.get("label")) str = str+" "+label.toString();
+		str = str.replace(/!|\+|\.|\:|\?|\||\\|\//g, "");
+		return str;
+	},
+	// Download audio if required
+	handleAudio: function(name) {
+		// Download the audio file
+		this.getVid($("#options").find("li[type=m4a]"), "AUDIO - " + name);
 
-        // Download the script
+		// Download the script
 
-        /*
-        var os = GetOs();
-        var text = MakeScript(settings.title, type, "m4a", "mp4", os);
-        settings.type = os.scriptType;
-        if (os.os === 'win'){
-            SaveToDisk(URL.createObjectURL(text), settings);
-        } else {
-            SaveToDisk("https://github.com/Domination9987/YouTube-Downloader/raw/master/muxer/Muxer.zip", settings);
-        }*/
-    },
-    getOs: function() {
-        var os = (navigator.appVersion.indexOf("Win") !== -1) ? "win" : "mac";
-        var scriptType = (os === "win") ? "bat" : "command";
-        return {os:os, scriptType:scriptType};
-    },
-    saveToDisk: function(url, name) {
-        console.log("Trying to download:", url);
-        chrome.runtime.sendMessage({
-            method: "download",
-            url: url,
-            filename: name
-        });
-    },
+		/*
+		var os = GetOs();
+		var text = MakeScript(settings.title, type, "m4a", "mp4", os);
+		settings.type = os.scriptType;
+		if (os.os === 'win'){
+			SaveToDisk(URL.createObjectURL(text), settings);
+		} else {
+			SaveToDisk("https://github.com/Domination9987/YouTube-Downloader/raw/master/muxer/Muxer.zip", settings);
+		}*/
+	},
+	getOs: function() {
+		var os = (navigator.appVersion.indexOf("Win") !== -1) ? "win" : "mac";
+		var scriptType = (os === "win") ? "bat" : "command";
+		return {os:os, scriptType:scriptType};
+	},
+	saveToDisk: function(url, name) {
+		console.log("Trying to download:", url);
+		chrome.runtime.sendMessage({
+			method: "download",
+			url: url,
+			filename: name
+		});
+	},
 
-    // Saves using the old method
-    // NOTE: Does not work for audio or DASH formats
-    //       will download as "videoplayback"
-    fallbackSave: function(url) {
-        var save = document.createElement('a');
-        save.target = "_blank";
-        save.download = true;
-        console.log(decodeURIComponent(url));
-        save.href = url;
-        (document.body || document.documentElement).appendChild(save);
-        save.onclick = function() {
-            (document.body || document.documentElement).removeChild(save);
-        };
-        save.click();
-    }
+	// Saves using the old method
+	// NOTE: Does not work for audio or DASH formats
+	//       will download as "videoplayback"
+	fallbackSave: function(url) {
+		var save = document.createElement('a');
+		save.target = "_blank";
+		save.download = true;
+		console.log(decodeURIComponent(url));
+		save.href = url;
+		(document.body || document.documentElement).appendChild(save);
+		save.onclick = function() {
+			(document.body || document.documentElement).removeChild(save);
+		};
+		save.click();
+	}
 }
