@@ -8,12 +8,14 @@ function Download() {
 Download.prototype = {
 	// Download the file
 	getVid: function($span, title) {
-		var type = $span.attr("type");
-		var dash = ($span.attr("dash") === "true") ? true : false;
+		var item = qualities.getFromItag($span.attr("itag"));
+		console.log(item);
+		var type = item.type;
+		var dash = item.dash;
 
-		var title = title || this.getTitle($span.attr("label"));
+		var title = title || this.getTitle(item.label);
 		var name = title;
-		var url = $span.attr("url").setSetting("title", encodeURIComponent(title));
+		var url = item.url.setSetting("title", encodeURIComponent(title));
 
 		// MP3 change
 		if (type === "mp3") {
@@ -37,14 +39,19 @@ Download.prototype = {
 	getTitle: function(label) {
 		label = (label) ? label : "";
 		var str = $("title").html().split(" - YouTube")[0];
-		if (settings.get("label")) str = str+" "+label.toString();
+
+		// Add the label if required
+		if (settings.get("label") && label.toString() !== "Audio") {
+			str += " " + label.toString();
+		}
+
 		str = str.replace(/!|\+|\.|\:|\?|\||\\|\//g, "");
 		return str;
 	},
 	// Download audio if required
 	handleAudio: function(name) {
 		// Download the audio file
-		this.getVid($("#options").find("li[type=m4a]"), "AUDIO - " + name);
+		this.getVid($("#options").find("li[itag=140]:eq(0)"), "AUDIO - " + name);
 
 		// Download the script
 
@@ -70,21 +77,5 @@ Download.prototype = {
 			url: url,
 			filename: name
 		});
-	},
-
-	// Saves using the old method
-	// NOTE: Does not work for audio or DASH formats
-	//       will download as "videoplayback"
-	fallbackSave: function(url) {
-		var save = document.createElement('a');
-		save.target = "_blank";
-		save.download = true;
-		console.log(decodeURIComponent(url));
-		save.href = url;
-		(document.body || document.documentElement).appendChild(save);
-		save.onclick = function() {
-			(document.body || document.documentElement).removeChild(save);
-		};
-		save.click();
 	}
 }

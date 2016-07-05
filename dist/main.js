@@ -118,7 +118,6 @@ $.fn.extend({
 // =================================================
 // Generates the display, updates the display, all
 // things related to the interface can be found here
-
 function Display() {
 	// The text colour of the size once loaded
 	this.SIZE_LOADED = "red";
@@ -130,13 +129,13 @@ function Display() {
 	// Download icon (with cloud)
 	this.$downloadIcon = $("<img>", {
 		style:"margin-right:4.5px",
-		class:'midalign',
+		class:"midalign",
 		src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downIconMed.png"
 	});
 	// Down select arrow (for dropdown)
 	this.$downArrow = $("<img>", {
 		style:"margin-left:6px;",
-		class:'midalign',
+		class:"midalign",
 		src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAV0lEQVQoU2NkIBEwkqiegXQNc+fOTWBkZJxPjE3///9PBNtAjCaQ4uTk5AVwJ+HTBFMMMhzFD9g0ISvG0IDuPHTFWDXANIFokJvRA4P0YCUmOJHVkGwDAPVTKkQsO0MlAAAAAElFTkSuQmCC"
 	});
 }
@@ -170,27 +169,21 @@ Display.prototype = {
 		$options = $("<ul>", {
 			id:"options",
 			class:"unselectable",
-			style:"display:none;position:absolute"
 		});
 
+		// Initialise items in the drop-down list
 		for (i = 0; i<qualities.items.length; i++) {
 			var quality = qualities.items[i];
 			var display = (quality.hidden) ? "none" : "inherit";
+
 			$li = $("<li>", {
-				html:quality.label,
-				value:quality.val,
-				url:quality.url,
-				type:quality.type,
-				label:quality.label,
-				style:"display:"+display,
-				dash:quality.dash,
-				muted:quality.muted,
-				mp3:quality.mp3,
-				size:quality.size
+				html  : quality.label,
+				itag  : quality.itag,
+				style : "display:"+display,
 			});
 
 			// Tags - get them and then append them to the $li
-			$tags = this.getTags($li);
+			$tags = this.getTags(quality);
 			for (var j = 0; j<$tags.length; j++) {
 				$li.append($tags[j]);
 			}
@@ -202,9 +195,9 @@ Display.prototype = {
 			if (!$topEl) $topEl = $li;
 
 			// If it matches the set quality, assign it to the info box
-			var sameQuality = (Number($li.attr("value")) === settings.get("quality"));
-			var sameType    = ($li.attr("type") === settings.get("type"));
-			if (sameQuality && sameType) {
+			var sameQuality = (quality.itag === Number(localStorage.selQuality));
+			var visible     = !quality.hidden;
+			if (sameQuality && visible) {
 				$topEl = $li;
 			}
 		}
@@ -217,18 +210,13 @@ Display.prototype = {
 			$("#downloadBtnCont").append($options);
 		}
 	},
-	// Updates the display
+	// Updates the display LIST-ITEM
 	updateDisplay: function($li, size, forceNeutralFloat) {
+		var item = qualities.getFromItag($li.attr("itag"));
 		var sizes = qualities.sizes;
 
-		// Attempt to obtain the size from the qualities values
-		var matchedQualities = qualities.items.listMatches("val", $li.attr("value"));
-		if (matchedQualities.length > 0) {
-			matchedQualities[0].size = size;
-		}
-
 		var _this = this;
-		var color = ($li.attr("dash") === "true") ? this.SIZE_WAITING : this.SIZE_LOADED;
+		var color = (item.dash) ? this.SIZE_WAITING : this.SIZE_LOADED;
 
 		// If the SIZE tag doesn't already exist, add it
 		var extraClass = (forceNeutralFloat) ? " floatNormal" : "";
@@ -246,14 +234,13 @@ Display.prototype = {
 		$spanSize.html(sizes.formatSize(size));
 
 		// If it is of the DASH format
-		if ($li.attr("dash") === "true") {
+		if (item.dash) {
 			if (globalProperties.audioSize) {
 				// Let the size be the sum of the size and the audio size
 				size = parseInt(size) + parseInt(globalProperties.audioSize);
 
 				$li.find("span.size").html(sizes.formatSize(size));
 				$li.find("span.size").css("color", this.SIZE_LOADED);
-				$li.attr("size", size);
 
 			} else {
 				// Try again in 2 seconds
@@ -264,7 +251,7 @@ Display.prototype = {
 		}
 	},
 
-	//Returns a jquery element of the download button with a certain text
+	// Returns a jquery element of the download button with a certain text
 	updateDownloadButton: function (text, disabled) {
 		// Create the download button container
 		var $container = this.checkContainer();
@@ -311,6 +298,7 @@ Display.prototype = {
 
 		// If an element was passed, prepend it
 		if ($li) {
+			var item = qualities.getFromItag($li.attr("itag"));
 			$span = $downloadBtnInfo.find("span:eq(0)");
 			if ($span.length === 0) {
 				$span = $("<span>");
@@ -321,13 +309,7 @@ Display.prototype = {
 
 			// Set the span ATTRIBUTES
 			$span.attr({
-				"label":$li.attr("label"),
-				"url"  :$li.attr("url"),
-				"type" :$li.attr("type"),
-				"dash" :$li.attr("dash"),
-				"muted":$li.attr("muted"),
-				"mp3"  :$li.attr("mp3"),
-				"value":$li.attr("value")
+				"itag": item.itag
 			});
 
 			var $child = $span.find("span.text");
@@ -339,7 +321,7 @@ Display.prototype = {
 			}
 
 			// Set the span HTML
-			$child.html($span.attr("label"));
+			$child.html(item.label);
 		}
 	},
 
@@ -357,14 +339,14 @@ Display.prototype = {
 
 		return $container;
 	},
-	getTags: function($li) {
+	getTags: function(quality) {
 		$tags = [];
 		$tags.push($("<span>", {
 			class:"tag ignoreMouse",
-			html:$li.attr("type")
+			html:quality.type
 		}));
 
-		var dash = $li.attr("dash");
+		var dash = quality.dash;
 		if (dash && dash !== "false") {
 			$tags.push($("<span>", {
 				class:"tag ignoreMouse",
@@ -372,7 +354,7 @@ Display.prototype = {
 			}));
 		}
 
-		var muted = $li.attr("muted");
+		var muted = quality.muted;
 		if (muted && muted !== "false") {
 			$tags.push($("<span>", {
 				class:"tag ignoreMouse",
@@ -411,7 +393,7 @@ function Qualities() {
 			type:"mp4"
 		},
 		36: {
-			resolution:240,
+			resolution:180,
 			type:"3gpp"
 		},
 		43: {
@@ -421,7 +403,7 @@ function Qualities() {
 		133: {
 			resolution:240,
 			type:"mp4",
-			muted:true,
+			dash:true
 		},
 		134: {
 			resolution:360,
@@ -567,10 +549,10 @@ Qualities.prototype = {
 			var tag = this.itags[itag] || {};
 
 			// Get the value from the tag
-			var val = this.getVal(tag);
+			var value = this.getValue(tag);
 
 			// Get the label from the tag
-			var label = this.getLabel(tag);
+			var label = sect.getSetting("quality_label") || this.getLabel(tag);
 
 			// If we have content-length, we can find size IMMEDIATELY
 			if (clen) {
@@ -595,26 +577,33 @@ Qualities.prototype = {
 
 			// Append to qualities (if it shouldn't be ignored)
 			var item = {
-				itag:itag,
-				url:url,
-				size:size,
-				type:tag.type,
-				dash:tag.dash || false,
-				muted:tag.muted || false,
-				label:label,
-				audio:tag.url || false,
-				val:val,
+				itag : itag,
+				url  : url,
+				size : size,
+				type : tag.type,
+				dash : tag.dash || false,
+				muted: tag.muted || false,
+				label: label,
+				audio: tag.url || false,
+				value: value
 			};
 			if (this.checkValid(item)) {
 				this.items.push(item);
+
+			// Check if it should be added but HIDDEN
+			} else {
+				if (item.type === "m4a") {
+					item.hidden = true;
+					this.items.push(item);
+				}
 			}
 			this.checkMP3(item);
 
 			// If it is the audio url - find the size and update
 			if (tag.type === "m4a" && tag.audio) {
 				var $li = $("<li>", {
-					url:url,
-					value:val,
+					url  : url,
+					itag : itag,
 				});
 
 				this.sizes.getSize($li, function($li, size) {
@@ -637,27 +626,31 @@ Qualities.prototype = {
 
 		return label;
 	},
-	getVal: function(tag) {
+	getValue: function(tag) {
 		// Base value is the resolution OR 0
-		var val = tag.resolution || 0;
+		var value = tag.resolution || 0;
 
 		// Multiply if it has an fps tag (high frame rate)
 		if (tag.fps >= 30) {
-			val += 10;
+			value += 10;
 		}
 
 		// Multiply if it is mp4
 		if (tag.type === "mp4") {
-			val *= 100;
+			value *= 100;
 		}
 
 		// Make it negative if it's audio
 		if (tag.audio) {
-			val -= 5;
-			val *= -1;
+			value -= 5;
+			value *= -1;
 		}
 
-		return val;
+		if (tag.type === "mp3") {
+			value -= 1;
+		}
+
+		return value;
 	},
 
 	sortItems: function() {
@@ -665,9 +658,9 @@ Qualities.prototype = {
 		this.items.sort(_this.sortDescending);
 	},
 	sortDescending: function(a, b) {
-		if (isNaN(a.val)) a.val = 0;
-		if (isNaN(b.val)) b.val = 0;
-		return Number(b.val) - Number(a.val);
+		if (isNaN(a.value)) a.value = 0;
+		if (isNaN(b.value)) b.value = 0;
+		return Number(b.value) - Number(a.value);
 	},
 
 	// Check if the item should be ignored or not
@@ -685,7 +678,7 @@ Qualities.prototype = {
 		}
 
 		// If it matches a blacklisted value
-		if (settings.get("ignoreVals").indexOf(item.val) !== -1) {
+		if (settings.get("ignoreVals").indexOf(item.value) !== -1) {
 			valid = false;
 		}
 
@@ -740,6 +733,22 @@ Qualities.prototype = {
 			newItem.type = "mp3";
 			this.items.push(newItem);
 		}
+	},
+
+	// Get from ITAG
+	getFromItag: function(itag) {
+		var matches = qualities.items.listMatches("itag", Number(itag));
+		
+		// Audio can have multiple (i.e. for MP3)
+		var notAudio = Number(itag) !== 140;
+
+		if (matches.length !== 1 && notAudio) {
+			console.log("ERROR: Found "+matches.length+" with itag: "+itag);
+		}
+		var item = matches[0] || {};
+
+		// Return the item obtained from the itag
+		return item;
 	}
 };
 
@@ -757,11 +766,11 @@ function GetSizes() {
 
 GetSizes.prototype = {
 	getSize: function($li, callback) {
-		var url = $li.attr("url");
+		var item = qualities.getFromItag($li.attr("itag"));
+		var url = item.url;
 
 		// Attempt to obtain the size from the qualities values
-		var matchedQualities = qualities.items.listMatches("val", $li.attr("value"));
-		var size = (matchedQualities.length > 0) ? matchedQualities[0].size : false;
+		var size = item.size;
 
 		if (size) {
 			callback($li, size);
@@ -868,17 +877,15 @@ Signature.prototype = {
 		}
 
 		var _this = this;
-		try {
-			Ajax.request({
-				method:"GET",
-				url:scriptURL,
-				success:function(xhr, text, jqXHR) {
-					text = (typeof(xhr) === "string") ? jqXHR.responseText : xhr.responseText;
-					_this.findSignatureCode(text);
-					callback();
-				}
-			});
-		} catch(e) { }
+		Ajax.request({
+			method:"GET",
+			url:scriptURL,
+			success:function(xhr, text, jqXHR) {
+				var text = (typeof(xhr) === "string") ? jqXHR.responseText : xhr.responseText;
+				_this.findSignatureCode(text);
+				callback();
+			}
+		});
 	},
 	getScriptURL: function(scriptURL) {
 		var split = scriptURL.split("//");
@@ -1094,12 +1101,14 @@ function Download() {
 Download.prototype = {
 	// Download the file
 	getVid: function($span, title) {
-		var type = $span.attr("type");
-		var dash = ($span.attr("dash") === "true") ? true : false;
+		var item = qualities.getFromItag($span.attr("itag"));
+		console.log(item);
+		var type = item.type;
+		var dash = item.dash;
 
-		var title = title || this.getTitle($span.attr("label"));
+		var title = title || this.getTitle(item.label);
 		var name = title;
-		var url = $span.attr("url").setSetting("title", encodeURIComponent(title));
+		var url = item.url.setSetting("title", encodeURIComponent(title));
 
 		// MP3 change
 		if (type === "mp3") {
@@ -1123,14 +1132,19 @@ Download.prototype = {
 	getTitle: function(label) {
 		label = (label) ? label : "";
 		var str = $("title").html().split(" - YouTube")[0];
-		if (settings.get("label")) str = str+" "+label.toString();
+
+		// Add the label if required
+		if (settings.get("label") && label.toString() !== "Audio") {
+			str += " " + label.toString();
+		}
+
 		str = str.replace(/!|\+|\.|\:|\?|\||\\|\//g, "");
 		return str;
 	},
 	// Download audio if required
 	handleAudio: function(name) {
 		// Download the audio file
-		this.getVid($("#options").find("li[type=m4a]"), "AUDIO - " + name);
+		this.getVid($("#options").find("li[itag=140]:eq(0)"), "AUDIO - " + name);
 
 		// Download the script
 
@@ -1156,24 +1170,41 @@ Download.prototype = {
 			url: url,
 			filename: name
 		});
-	},
-
-	// Saves using the old method
-	// NOTE: Does not work for audio or DASH formats
-	//       will download as "videoplayback"
-	fallbackSave: function(url) {
-		var save = document.createElement('a');
-		save.target = "_blank";
-		save.download = true;
-		console.log(decodeURIComponent(url));
-		save.href = url;
-		(document.body || document.documentElement).appendChild(save);
-		save.onclick = function() {
-			(document.body || document.documentElement).removeChild(save);
-		};
-		save.click();
 	}
 }
+
+// src/classes/unique/settings.js
+// =================================================
+// This class handles the settings
+// Uses localStorage to remember the settings
+
+function Settings(defaultSettings) {
+	// Fetch the settings from localStorage
+	this.settings = {};
+
+	// Set the default settings
+	for (var key in defaultSettings) {
+		if (defaultSettings.hasOwnProperty(key)) {
+			this.settings[key] = defaultSettings[key];
+		}
+	}
+}
+
+Settings.prototype = {
+	// Get the value of a property
+	get: function(key) {
+		var value = this.settings[key];
+		if (Number(value) === value) {
+			value = Number(value);
+		}
+
+		return value;
+	},
+	// Set a new property
+	set: function(key, value) {
+		this.settings[key] = value;
+	}
+};
 
 // src/classes/unique/unsafe.js
 // =================================================
@@ -1219,22 +1250,34 @@ Unsafe.prototype = {
 // src/main.js
 // =================================================
 // Variables
-var defaultSettings = {         // Default settings
-	quality:7200000,            // Quality selected (720p60)
-	ignoreMuted:true,           // Ignore muted
-	ignoreTypes:["webm"],       // Ignore webm types (muxing doesn't work atm)
-	ignoreVals:[],              // Ignore values
-	label:true,                 // Have quality label on download
+// Selected quality
+localStorage.selQuality = localStorage.selQuality || 298;
+
+// Default settings
+var defaultSettings = {
+	// Ignore muted
+	ignoreMuted:true,
+	
+	// Types that are ignored
+	ignoreTypes:["webm"],
+
+	// Values that are ignored
+	ignoreVals:[],
+
+	// Have quality label on download
+	label:true,                 
 };
 
 // Volatile properties
 var globalProperties = {
-	audioSize:false,            // Size of audio
-	signatureCode:false         // Obtained signature pattern
+	// Size of audio
+	audioSize:false,
+
+	// Obtained signature pattern
+	signatureCode:false
 };
 
 // Objects
-var ytplayer  = {};
 var Ajax      = new AjaxClass();
 var settings  = new Settings(defaultSettings);
 var signature = new Signature();
@@ -1242,6 +1285,7 @@ var display   = new Display();
 var qualities = new Qualities();
 var download  = new Download();
 var unsafe    = new Unsafe();
+var ytplayer  = {};
 
 // Run the script ONLY if it's on the top
 if (window.top === window) {
@@ -1307,6 +1351,7 @@ function AddEvents() {
 		}
 	}, 200);
 
+	// On download button click
 	$(document).on("click", "#downloadBtn", function() {
 		// Ensure that the button is ENABLED
 		if (!$(this).hasClass("disabled")) {
@@ -1321,14 +1366,13 @@ function AddEvents() {
 		$("#options").toggle();
 	});
 
-	// Show options on options click
+	// On individual option click
 	$(document).on("click", "#options li", function() {
 		// Close the options
-		$("#options").toggle();
+		$("#options").hide();
 
 		// Update the relevant settings
-		settings.set("quality", Number($(this).attr("value")));
-		settings.set("type",    $(this).attr("type"));
+		localStorage.selQuality = Number($(this).attr("value"));
 
 		// Update the info
 		display.updateInfo($(this));
