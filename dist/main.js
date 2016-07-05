@@ -781,6 +781,7 @@ GetSizes.prototype = {
 				url:url,
 				success:function(xhr, text, jqXHR) {
 					var size = Number(Ajax.getResponseHeader(xhr, text, jqXHR, "Content-length"));
+					item.size = size;
 					callback($li, size);
 				}
 			});
@@ -1102,7 +1103,6 @@ Download.prototype = {
 	// Download the file
 	getVid: function($span, title) {
 		var item = qualities.getFromItag($span.attr("itag"));
-		console.log(item);
 		var type = item.type;
 		var dash = item.dash;
 
@@ -1372,7 +1372,7 @@ function AddEvents() {
 		$("#options").hide();
 
 		// Update the relevant settings
-		localStorage.selQuality = Number($(this).attr("value"));
+		localStorage.selQuality = Number($(this).attr("itag"));
 
 		// Update the info
 		display.updateInfo($(this));

@@ -9,7 +9,6 @@ Download.prototype = {
 	// Download the file
 	getVid: function($span, title) {
 		var item = qualities.getFromItag($span.attr("itag"));
-		console.log(item);
 		var type = item.type;
 		var dash = item.dash;
 
