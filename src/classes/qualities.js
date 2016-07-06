@@ -227,6 +227,7 @@ Qualities.prototype = {
 					this.items.push(item);
 				}
 			}
+
 			this.checkMP3(item);
 
 			// If it is the audio url - find the size and update
@@ -334,7 +335,7 @@ Qualities.prototype = {
 				if (splitLengths.url !== 1 || splitLengths.sig !== 1) {
 					console.log("checkPotential");
 					console.log(split[i]);
-					console.log(splitLengths.url, splitLengths,sig);
+					console.log(splitLengths.url, splitLengths.sig);
 				}
 			}
 		}
@@ -361,6 +362,7 @@ Qualities.prototype = {
 			}
 
 			newItem.type = "mp3";
+			newItem.itag += 1;
 			this.items.push(newItem);
 		}
 	},

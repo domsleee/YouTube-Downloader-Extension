@@ -16,9 +16,9 @@ function Display() {
 	});
 	// Down select arrow (for dropdown)
 	this.$downArrow = $("<img>", {
-		style:"margin-left:6px;",
+		style:"margin-left:6px;width:13px;margin-bottom:-13px;transform:translateY(-50%);",
 		class:"midalign",
-		src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAV0lEQVQoU2NkIBEwkqiegXQNc+fOTWBkZJxPjE3///9PBNtAjCaQ4uTk5AVwJ+HTBFMMMhzFD9g0ISvG0IDuPHTFWDXANIFokJvRA4P0YCUmOJHVkGwDAPVTKkQsO0MlAAAAAElFTkSuQmCC"
+		src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downArrowLarge.png"
 	});
 }
 

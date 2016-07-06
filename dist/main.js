@@ -134,9 +134,9 @@ function Display() {
 	});
 	// Down select arrow (for dropdown)
 	this.$downArrow = $("<img>", {
-		style:"margin-left:6px;",
+		style:"margin-left:6px;width:13px;margin-bottom:-13px;transform:translateY(-50%);",
 		class:"midalign",
-		src:"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAAV0lEQVQoU2NkIBEwkqiegXQNc+fOTWBkZJxPjE3///9PBNtAjCaQ4uTk5AVwJ+HTBFMMMhzFD9g0ISvG0IDuPHTFWDXANIFokJvRA4P0YCUmOJHVkGwDAPVTKkQsO0MlAAAAAElFTkSuQmCC"
+		src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downArrowLarge.png"
 	});
 }
 
@@ -597,6 +597,7 @@ Qualities.prototype = {
 					this.items.push(item);
 				}
 			}
+
 			this.checkMP3(item);
 
 			// If it is the audio url - find the size and update
@@ -704,7 +705,7 @@ Qualities.prototype = {
 				if (splitLengths.url !== 1 || splitLengths.sig !== 1) {
 					console.log("checkPotential");
 					console.log(split[i]);
-					console.log(splitLengths.url, splitLengths,sig);
+					console.log(splitLengths.url, splitLengths.sig);
 				}
 			}
 		}
@@ -731,6 +732,7 @@ Qualities.prototype = {
 			}
 
 			newItem.type = "mp3";
+			newItem.itag += 1;
 			this.items.push(newItem);
 		}
 	},
@@ -812,49 +814,6 @@ GetSizes.prototype = {
 
 		// Return the string of return size
 		return returnSize;
-	}
-};
-
-// src/classes/settings.js
-// =================================================
-// This class handles the settings
-// Uses localStorage to remember the settings
-
-function Settings(defaultSettings) {
-	// Fetch the settings from localStorage
-	this.settings = localStorage.getObject("globalSettings") || {};
-
-	// Set the default settings
-	for (var key in defaultSettings) {
-		if (defaultSettings.hasOwnProperty(key)) {
-			if (this.settings[key] === undefined || true) {
-				this.settings[key] = defaultSettings[key];
-			}
-		}
-	}
-
-	// Update in localStorage
-	this.update();
-}
-
-Settings.prototype = {
-	// Update the settings
-	update: function() {
-		localStorage.setObject("globalSettings", this.settings);
-	},
-	// Get the value of a property
-	get: function(key) {
-		var value = this.settings[key];
-		if (Number(value) === value) {
-			value = Number(value);
-		}
-
-		return value;
-	},
-	// Set a new property
-	set: function(key, value) {
-		this.settings[key] = JSON.stringify(value);
-		this.update();
 	}
 };
 
@@ -1144,7 +1103,7 @@ Download.prototype = {
 	// Download audio if required
 	handleAudio: function(name) {
 		// Download the audio file
-		this.getVid($("#options").find("li[itag=140]:eq(0)"), "AUDIO - " + name);
+		this.getVid($("#options").find("li[itag=141]:eq(0)"), "AUDIO - " + name);
 
 		// Download the script
 
@@ -1180,17 +1139,26 @@ Download.prototype = {
 
 function Settings(defaultSettings) {
 	// Fetch the settings from localStorage
-	this.settings = {};
+	this.settings = localStorage.getObject("globalSettings") || {};
 
 	// Set the default settings
 	for (var key in defaultSettings) {
 		if (defaultSettings.hasOwnProperty(key)) {
-			this.settings[key] = defaultSettings[key];
+			if (this.settings[key] === undefined || true) {
+				this.settings[key] = defaultSettings[key];
+			}
 		}
 	}
+
+	// Update in localStorage
+	this.update();
 }
 
 Settings.prototype = {
+	// Update the settings
+	update: function() {
+		localStorage.setObject("globalSettings", this.settings);
+	},
 	// Get the value of a property
 	get: function(key) {
 		var value = this.settings[key];
@@ -1202,7 +1170,8 @@ Settings.prototype = {
 	},
 	// Set a new property
 	set: function(key, value) {
-		this.settings[key] = value;
+		this.settings[key] = JSON.stringify(value);
+		this.update();
 	}
 };
 
@@ -1297,7 +1266,7 @@ if (window.top === window) {
 function Program() {
 	// Make sure it is of the correct URL
 	var url = window.location.href;
-	if (url.indexOf("watch") === -1) return;
+	if (!url.match(/watch|embed/)) return;
 
 	unsafe.getVariable("ytplayer", function(ytp) {
 		// If the old thing is still there, wait a while

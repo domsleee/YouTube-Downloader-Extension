@@ -46,7 +46,7 @@ if (window.top === window) {
 function Program() {
 	// Make sure it is of the correct URL
 	var url = window.location.href;
-	if (url.indexOf("watch") === -1) return;
+	if (!url.match(/watch|embed/)) return;
 
 	unsafe.getVariable("ytplayer", function(ytp) {
 		// If the old thing is still there, wait a while
