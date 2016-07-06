@@ -580,7 +580,7 @@ Qualities.prototype = {
 				itag : itag,
 				url  : url,
 				size : size,
-				type : newType
+				type : newType,
 				dash : tag.dash || false,
 				muted: tag.muted || false,
 				label: label,
@@ -592,7 +592,7 @@ Qualities.prototype = {
 
 			// Check if it should be added but HIDDEN
 			} else {
-				if (item.type === "m4a") {
+				if (newType === "m4a") {
 					item.hidden = true;
 					this.items.push(item);
 				}
@@ -601,7 +601,7 @@ Qualities.prototype = {
 			this.checkMP3(item);
 
 			// If it is the audio url - find the size and update
-			if (tag.type === "m4a" && tag.audio) {
+			if (newType === "m4a" && tag.audio) {
 				var $li = $("<li>", {
 					url  : url,
 					itag : itag,
@@ -1097,7 +1097,7 @@ Download.prototype = {
 			str += " " + label.toString();
 		}
 
-		str = str.replace(/!|\+|\.|\:|\?|\||\\|\//g, "");
+		str = str.replace(/!|\+|\.|\:|\?|\||\\|\//g, "").replace(/\"/g, "'");
 		return str;
 	},
 	// Download audio if required
