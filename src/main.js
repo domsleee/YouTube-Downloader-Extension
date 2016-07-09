@@ -8,7 +8,7 @@ var defaultSettings = {
 	ignoreMuted:true,
 	
 	// Types that are ignored
-	ignoreTypes:["webm"],
+	ignoreTypes:[],
 
 	// Values that are ignored
 	ignoreVals:[],
@@ -68,18 +68,20 @@ function Program() {
 		signature.fetchSignatureScript(function() {
 			// Reset the audio size
 			globalProperties.audioSize = false;
-			qualities.initialise();
-			qualities.sortItems();
 
-			// Update the download button, set it to be ENABLED
-			// with text "Download"
-			display.updateDownloadButton("Download");
+			// Initialise the available qualities
+			qualities.initialise(function() {
+				qualities.sortItems();
+				// Update the download button, set it to be ENABLED
+				// with text "Download"
+				display.updateDownloadButton("Download");
 
-			// Initialise the options & add it to the frame
-			display.initOptions(qualities, $("#downloadBtnInfo"));
+				// Initialise the options & add it to the frame
+				display.initOptions(qualities, $("#downloadBtnInfo"));
 
-			// Update the display (fetch sizes as well)
-			display.update();
+				// Update the display (fetch sizes as well)
+				display.update();
+			});
 		});
 	});
 }
