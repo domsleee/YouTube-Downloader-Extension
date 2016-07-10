@@ -128,14 +128,12 @@ function Display() {
 	// Sprites
 	// Download icon (with cloud)
 	this.$downloadIcon = $("<img>", {
-		style:"margin-right:4.5px",
-		class:"midalign",
+		class:"midalign downloadIcon",
 		src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downIconMed.png"
 	});
 	// Down select arrow (for dropdown)
 	this.$downArrow = $("<img>", {
-		style:"margin-left:6px;width:13px;margin-bottom:-13px;transform:translateY(-50%);",
-		class:"midalign",
+		class:"midalign downArrow",
 		src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downArrowLarge.png"
 	});
 }
@@ -477,15 +475,18 @@ function Qualities() {
 		},
 		264: {
 			resolution:1440,
-			type:"mp4"
+			type:"mp4",
+			dash:true
 		},
 		266: {
 			resolution:2160,
-			type:"mp4"
+			type:"mp4",
+			dash:true
 		},
 		271: {
 			resolution:1440,
-			type:"webm"
+			type:"webm",
+			dash:true
 		},
 		278: {
 			resolution:140,
@@ -518,7 +519,8 @@ function Qualities() {
 		},
 		313: {
 			resolution:2160,
-			type:"webm"
+			type:"webm",
+			dash:true
 		},
 	};
 }
@@ -770,7 +772,7 @@ Qualities.prototype = {
 
 		// Trace out why it isn't valid
 		if (!valid) {
-			var split = potential.split(",");
+			var split = potential.split(",") || "";
 			for (var i = 0; i<split.length; i++) {
 				var splitLengths = this.getPotentialLengths(split[i]);
 				if (splitLengths.url !== 1 || splitLengths.sig !== 1) {
@@ -1299,7 +1301,7 @@ var defaultSettings = {
 	ignoreMuted:true,
 	
 	// Types that are ignored
-	ignoreTypes:[],
+	ignoreTypes:["webm"],
 
 	// Values that are ignored
 	ignoreVals:[],

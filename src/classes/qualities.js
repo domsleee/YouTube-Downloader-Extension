@@ -107,15 +107,18 @@ function Qualities() {
 		},
 		264: {
 			resolution:1440,
-			type:"mp4"
+			type:"mp4",
+			dash:true
 		},
 		266: {
 			resolution:2160,
-			type:"mp4"
+			type:"mp4",
+			dash:true
 		},
 		271: {
 			resolution:1440,
-			type:"webm"
+			type:"webm",
+			dash:true
 		},
 		278: {
 			resolution:140,
@@ -148,7 +151,8 @@ function Qualities() {
 		},
 		313: {
 			resolution:2160,
-			type:"webm"
+			type:"webm",
+			dash:true
 		},
 	};
 }
@@ -400,7 +404,7 @@ Qualities.prototype = {
 
 		// Trace out why it isn't valid
 		if (!valid) {
-			var split = potential.split(",");
+			var split = potential.split(",") || "";
 			for (var i = 0; i<split.length; i++) {
 				var splitLengths = this.getPotentialLengths(split[i]);
 				if (splitLengths.url !== 1 || splitLengths.sig !== 1) {
