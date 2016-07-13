@@ -399,18 +399,21 @@ Qualities.prototype = {
 		return potential;
 	},
 	checkPotential: function(potential) {
-		var lengths = this.getPotentialLengths(potential);
-		var valid = (lengths.url >= lengths.url && lengths.sig > 1);
+		var valid = false;
+		if (potential) {
+			var lengths = this.getPotentialLengths(potential);
+			valid = (lengths.url >= lengths.url && lengths.sig > 1);
 
-		// Trace out why it isn't valid
-		if (!valid) {
-			var split = potential.split(",") || "";
-			for (var i = 0; i<split.length; i++) {
-				var splitLengths = this.getPotentialLengths(split[i]);
-				if (splitLengths.url !== 1 || splitLengths.sig !== 1) {
-					console.log("checkPotential");
-					console.log(split[i]);
-					console.log(splitLengths.url, splitLengths.sig);
+			// Trace out why it isn't valid
+			if (!valid) {
+				var split = potential.split(",") || "";
+				for (var i = 0; i<split.length; i++) {
+					var splitLengths = this.getPotentialLengths(split[i]);
+					if (splitLengths.url !== 1 || splitLengths.sig !== 1) {
+						console.log("checkPotential");
+						console.log(split[i]);
+						console.log(splitLengths.url, splitLengths.sig);
+					}
 				}
 			}
 		}
