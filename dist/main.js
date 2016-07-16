@@ -816,11 +816,8 @@ Qualities.prototype = {
 	// Get from ITAG
 	getFromItag: function(itag) {
 		var matches = qualities.items.listMatches("itag", Number(itag));
-		
-		// Audio can have multiple (i.e. for MP3)
-		var notAudio = Number(itag) !== 140;
 
-		if (matches.length !== 1 && notAudio) {
+		if (matches.length !== 1) {
 			console.log("ERROR: Found "+matches.length+" with itag: "+itag);
 		}
 		var item = matches[0] || {};
@@ -858,7 +855,12 @@ GetSizes.prototype = {
 				method:"HEAD",
 				url:url,
 				success:function(xhr, text, jqXHR) {
-					var size = Number(Ajax.getResponseHeader(xhr, text, jqXHR, "Content-length"));
+					var size = Number(Ajax.getResponseHeader(xhr, text, jqXHR, "Content-Length"));
+
+					// Revert to old header name
+					if (size === 0) {
+						size = Number(Ajax.getResponseHeader(xhr, text, jqXHR, "Content-length"));
+					}
 					item.size = size;
 					callback($li, size);
 				}
@@ -1384,14 +1386,12 @@ function Program() {
 
 // Adds events to the window
 function AddEvents() {
-	var _this = this;
-
 	// Call the function on page change
-	this.lastURL = window.location.href;
+	window.lastURL = window.location.href;
 	setInterval(function() {
 		var newURL = window.location.href;
-		if (newURL !== _this.lastURL) {
-			_this.lastURL = newURL;
+		if (newURL !== window.lastURL) {
+			window.lastURL = newURL;
 			$(window).ready(function() {
 				Program();
 			});
