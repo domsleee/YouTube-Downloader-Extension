@@ -11,12 +11,12 @@ function Display() {
 	// Download icon (with cloud)
 	this.$downloadIcon = $("<img>", {
 		class:"midalign downloadIcon",
-		src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downIconMed.png"
+		src:chrome.extension.getURL("/imgs/downIconMed.png")
 	});
 	// Down select arrow (for dropdown)
 	this.$downArrow = $("<img>", {
 		class:"midalign downArrow",
-		src:"https://raw.githubusercontent.com/Domination9987/YouTube-Downloader/master/graphics/downArrowLarge.png"
+		src:chrome.extension.getURL("/imgs/downArrowLarge.png")
 	});
 }
 

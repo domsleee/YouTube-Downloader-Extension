@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "YouTube Downloader",
   "description": "Download 60fps MP4 videos and 128kbps MP3 audio from YouTube",
-  "version": "0.02",
+  "version": "0.03",
   "icons":{
     "128":"icon.png"
   },
@@ -36,6 +36,7 @@
     "https://manifest.googlevideo.com/*"
   ],
   "web_accessible_resources":[
-    "imgs/downIconSmall.png"
+    "/imgs/downArrowLarge.png",
+    "/imgs/downIconMed.png"
   ]
 }
